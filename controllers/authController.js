@@ -469,8 +469,7 @@ exports.verifyEmailOTP = async (req, res, next) => {
 
       // Find specific user by email with unverified status
       const user = await User.findOne({
-        email: email.toLowerCase(),
-        emailVerified: false
+        email: email.toLowerCase()
       });
 
       if (!user) {
