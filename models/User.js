@@ -68,6 +68,11 @@ const userSchema = new mongoose.Schema({
     unique: true,
     required: false
   },
+  referralUsed: {
+    type: String,
+    required: false,
+    default: 'null'
+  },
   emailVerified: {
     type: Boolean,
     default: false

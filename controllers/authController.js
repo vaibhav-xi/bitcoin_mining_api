@@ -17,7 +17,7 @@ const generateReferralCode = () => {
 // @access  Public
 exports.register = async (req, res, next) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password, referral_code } = req.body;
 
     // Validation
     if (!name || !email || !password) {
@@ -25,6 +25,14 @@ exports.register = async (req, res, next) => {
         success: false,
         message: 'Please provide name, email and password'
       });
+    }
+
+    var used_referral = 'null';
+
+    if (!referral_code || referral_code === '') {
+      console.log("No Referral Code received");
+    } else {
+      used_referral = referral_code;
     }
 
     // Check if user already exists
@@ -44,7 +52,8 @@ exports.register = async (req, res, next) => {
       email,
       password,
       emailVerified: false,
-      referralCode: user_code
+      referralCode: user_code,
+      referralUsed: used_referral
     });
 
     // Generate email verification OTP

@@ -14,8 +14,39 @@ const {
 } = require('../controllers/authController');
 
 const auth = require('../middleware/auth');
+const User = require('../models/User');
 
 const router = express.Router();
+
+router.get("/referrals", async (req, res) => {
+  try {
+    const { code } = req.query;
+
+    if (!code || typeof code !== "string") {
+      return res.status(400).json({
+        success: false,
+        message: "Referral code is required",
+      });
+    }
+
+    // Case-insensitive search
+    const count = await User.countDocuments({
+      referralUsed: { $regex: `^${code}$`, $options: "i" },
+    });
+
+    res.json({
+      success: true,
+      referralCode: code,
+      count,
+    });
+  } catch (error) {
+    console.error("Fetching error:", error.message);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch user referrals",
+    });
+  }
+});
 
 // Public routes
 router.post('/register', register);
