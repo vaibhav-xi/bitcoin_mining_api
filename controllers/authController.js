@@ -3,6 +3,15 @@ const User = require('../models/User');
 const sendEmail = require('../utils/sendEmail');
 const sendTokenResponse = require('../utils/sendTokenResponse');
 
+const generateReferralCode = () => {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let result = '';
+  for (let i = 0; i < 6; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+};
+
 // @desc    Register user
 // @route   POST /api/auth/register
 // @access  Public
@@ -27,12 +36,15 @@ exports.register = async (req, res, next) => {
       });
     }
 
+    const user_code = generateReferralCode();
+
     // Create user
     const user = await User.create({
       name,
       email,
       password,
-      emailVerified: false
+      emailVerified: false,
+      referralCode: user_code
     });
 
     // Generate email verification OTP
@@ -63,7 +75,8 @@ exports.register = async (req, res, next) => {
           id: user._id,
           name: user.name,
           email: user.email,
-          emailVerified: user.emailVerified
+          emailVerified: user.emailVerified,
+          referralCode: user.referralCode
         }
       });
     } catch (err) {
@@ -79,7 +92,8 @@ exports.register = async (req, res, next) => {
           id: user._id,
           name: user.name,
           email: user.email,
-          emailVerified: user.emailVerified
+          emailVerified: user.emailVerified,
+          referralCode: user.referralCode
         }
       });
     }
@@ -136,7 +150,8 @@ exports.login = async (req, res, next) => {
         user: {
           id: user._id,
           name: user.name,
-          email: user.email
+          email: user.email,
+          referral: user.referralCode
         }
       });
     }
