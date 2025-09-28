@@ -231,22 +231,19 @@ exports.forgotPassword = async (req, res, next) => {
     }
 
     // Get reset token
-    const resetToken = user.getResetPasswordToken();
+    const resetToken = user.generateEmailVerificationOTP();
 
     await user.save({ validateBeforeSave: false });
 
-    // Create reset url
-    const resetUrl = `${req.protocol}://${req.get('host')}/api/auth/resetpassword/${resetToken}`;
-
-    const message = `You are receiving this email because you (or someone else) has requested the reset of a password. Please make a PUT request to: \n\n ${resetUrl}`;
+    const message = `You are receiving this email because you have requested to reset password`;
 
     const htmlMessage = `
       <h1>Password Reset Request</h1>
       <p>You are receiving this email because you (or someone else) has requested the reset of a password.</p>
-      <p>Please click the link below to reset your password:</p>
-      <a href="${resetUrl}" style="background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Reset Password</a>
+      <p>Please use the code below to reset your password:</p>
+      <p>${resetToken}</p>
       <p>If you did not request this, please ignore this email and your password will remain unchanged.</p>
-      <p>This link will expire in 10 minutes.</p>
+      <p>This code will expire in 10 minutes.</p>
     `;
 
     try {
