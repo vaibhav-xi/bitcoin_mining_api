@@ -285,20 +285,14 @@ exports.forgotPassword = async (req, res, next) => {
 exports.resetPassword = async (req, res, next) => {
   try {
     // Get hashed token
-    const resetPasswordToken = crypto
-      .createHash('sha256')
-      .update(req.params.resettoken)
-      .digest('hex');
-
     const user = await User.findOne({
-      resetPasswordToken,
-      resetPasswordExpire: { $gt: Date.now() }
+      email: req.params.resettoken
     });
 
     if (!user) {
       return res.status(400).json({
         success: false,
-        message: 'Invalid token or token has expired'
+        message: 'Invalid or expired OTP'
       });
     }
 
