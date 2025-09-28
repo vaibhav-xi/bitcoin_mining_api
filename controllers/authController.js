@@ -625,8 +625,8 @@ exports.resendEmailVerification = async (req, res, next) => {
   }
 };
 
-// @desc    Forgot password
-// @route   POST /api/auth/forgotpassword
+// @desc    Update Email OTP
+// @route   POST /api/auth/update-email-otp
 // @access  Public
 exports.updateemailotp = async (req, res, next) => {
   try {
@@ -679,7 +679,7 @@ exports.updateemailotp = async (req, res, next) => {
     try {
       await sendEmail({
         email: user.email,
-        subject: 'Password Reset Token',
+        subject: 'Updating Email',
         message,
         html: htmlMessage
       });
@@ -709,6 +709,74 @@ exports.updateemailotp = async (req, res, next) => {
     }
   } catch (error) {
     console.error('Forgot password error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error'
+    });
+  }
+};
+
+// @desc    UpadteEmail
+// @route   POST /api/auth/updateemail
+// @access  Public
+exports.updateemail = async (req, res, next) => {
+  try {
+    const { email, new_email, otp } = req.body;
+
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide an email address'
+      });
+    }
+
+    if (!new_email) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide an email address that needs to be updated'
+      });
+    }
+
+    const user = await User.findOne({
+      emailVerificationOTP: otp,
+      emailVerificationOTPExpire: { $gt: Date.now() },
+      email: email
+    });
+
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid or expired OTP'
+      });
+    }
+
+    try {
+
+      user.email = new_email;
+      user.resetPasswordToken = undefined;
+      user.resetPasswordExpire = undefined;
+
+      await user.save();
+
+      res.status(200).json({
+        success: true,
+        message: 'Email updated successfully'
+      });
+
+    } catch (err) {
+      console.error('Email send error:', err);
+      user.resetPasswordToken = undefined;
+      user.resetPasswordExpire = undefined;
+
+      await user.save({ validateBeforeSave: false });
+
+      return res.status(500).json({
+        success: false,
+        message: 'Email could not be sent'
+      });
+    }
+  } catch (error) {
+    console.error('Update Email error:', error);
     res.status(500).json({
       success: false,
       message: 'Server error'
