@@ -488,40 +488,40 @@ exports.verifyEmailOTP = async (req, res, next) => {
     const { otp, email } = req.params;
 
     // TEMPORARY: Accept any 4-digit OTP for development
-    if (otp && otp.length === 4 && /^\d{4}$/.test(otp)) {
-      console.log(`Development mode: Accepting any 4-digit OTP: ${otp} for email: ${email}`);
+    // if (otp && otp.length === 4 && /^\d{4}$/.test(otp)) {
+    //   console.log(`Development mode: Accepting any 4-digit OTP: ${otp} for email: ${email}`);
 
-      // Find specific user by email with unverified status
-      const user = await User.findOne({
-        email: email.toLowerCase()
-      });
+    //   // Find specific user by email with unverified status
+    //   const user = await User.findOne({
+    //     email: email.toLowerCase()
+    //   });
 
-      if (!user) {
-        return res.status(400).json({
-          success: false,
-          message: `No unverified user found with email: ${email}`
-        });
-      }
+    //   if (!user) {
+    //     return res.status(400).json({
+    //       success: false,
+    //       message: `No unverified user found with email: ${email}`
+    //     });
+    //   }
 
-      // Set email as verified
-      user.emailVerified = true;
-      user.emailVerificationOTP = undefined;
-      user.emailVerificationOTPExpire = undefined;
-      await user.save();
+    //   // Set email as verified
+    //   user.emailVerified = true;
+    //   user.emailVerificationOTP = undefined;
+    //   user.emailVerificationOTPExpire = undefined;
+    //   await user.save();
 
-      console.log(`Email verified successfully for user: ${user.email}`);
+    //   console.log(`Email verified successfully for user: ${user.email}`);
 
-      return res.status(200).json({
-        success: true,
-        message: 'Email verified successfully with OTP (Development Mode)',
-        user: {
-          id: user._id,
-          name: user.name,
-          email: user.email,
-          emailVerified: true
-        }
-      });
-    }
+    //   return res.status(200).json({
+    //     success: true,
+    //     message: 'Email verified successfully with OTP (Development Mode)',
+    //     user: {
+    //       id: user._id,
+    //       name: user.name,
+    //       email: user.email,
+    //       emailVerified: true
+    //     }
+    //   });
+    // }
 
     // Original OTP validation (for production)
     const user = await User.findOne({
