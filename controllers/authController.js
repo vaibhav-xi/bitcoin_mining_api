@@ -624,3 +624,94 @@ exports.resendEmailVerification = async (req, res, next) => {
     });
   }
 };
+
+// @desc    Forgot password
+// @route   POST /api/auth/forgotpassword
+// @access  Public
+exports.updateemailotp = async (req, res, next) => {
+  try {
+    const { email, new_email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide an email address'
+      });
+    }
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'There is no user with that email'
+      });
+    }
+
+    // Get reset token
+    const UpdateOTP = user.generateEmailVerificationOTP();
+
+    await user.save({ validateBeforeSave: false });
+
+    const message = `You are receiving this email because you have requested to change email`;
+
+    const htmlMessage = `
+      <h1>Email Change Request</h1>
+      <p>You are receiving this email because you have requested to update email.</p>
+      
+      <p>If you did not request this, please ignore this email and your password will remain unchanged.</p>
+      <p>This code will expire in 10 minutes.</p>
+    `;
+
+    const NewMessage = `You are receiving this email because you have requested to change email`;
+
+    const NewHtmlMessage = `
+      <h1>Email Change Request</h1>
+      <p>You are receiving this email because you have requested to update email.</p>
+
+      <p>Please use the code below to update your email:</p>
+      <p>${UpdateOTP}</p>
+      
+      <p>If you did not request this, please ignore this email and your password will remain unchanged.</p>
+      <p>This code will expire in 10 minutes.</p>
+    `;
+
+    try {
+      await sendEmail({
+        email: user.email,
+        subject: 'Password Reset Token',
+        message,
+        html: htmlMessage
+      });
+
+      await sendEmail({
+        email: new_email,
+        subject: 'Update User Email',
+        NewMessage,
+        html: NewHtmlMessage
+      });
+
+      res.status(200).json({
+        success: true,
+        message: 'Email sent successfully'
+      });
+    } catch (err) {
+      console.error('Email send error:', err);
+      user.resetPasswordToken = undefined;
+      user.resetPasswordExpire = undefined;
+
+      await user.save({ validateBeforeSave: false });
+
+      return res.status(500).json({
+        success: false,
+        message: 'Email could not be sent'
+      });
+    }
+  } catch (error) {
+    console.error('Forgot password error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error'
+    });
+  }
+};

@@ -10,7 +10,8 @@ const {
   logout,
   verifyEmail,
   verifyEmailOTP,
-  resendEmailVerification
+  resendEmailVerification,
+  updateemailotp
 } = require('../controllers/authController');
 
 const auth = require('../middleware/auth');
@@ -58,6 +59,7 @@ router.post('/update-password-direct', updatePasswordDirect); // For testing pur
 router.get('/verify-email/:token', verifyEmail);
 router.get('/verify-email-otp/:otp/:email', verifyEmailOTP);
 router.post('/resend-verification', resendEmailVerification);
+router.post('/update-email-otp', updateemailotp);
 
 // Protected routes
 router.get('/me', auth, getMe);
