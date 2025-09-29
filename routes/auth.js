@@ -13,7 +13,8 @@ const {
   resendEmailVerification,
   updateemailotp,
   updateemail,
-  TwoFactorOTP
+  TwoFactorOTP,
+  VerifyTwoFaOTP
 } = require('../controllers/authController');
 
 const auth = require('../middleware/auth');
@@ -64,6 +65,7 @@ router.post('/resend-verification', resendEmailVerification);
 router.post('/update-email-otp', updateemailotp);
 router.post('/update-email', updateemail);
 router.post('/two-factor-otp', TwoFactorOTP);
+router.post('/verify-twofactorotp', VerifyTwoFaOTP);
 
 // Protected routes
 router.get('/me', auth, getMe);

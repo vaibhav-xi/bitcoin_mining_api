@@ -785,7 +785,7 @@ exports.updateemail = async (req, res, next) => {
   }
 };
 
-// @desc    Update Email OTP
+// @desc    Send Two Factor OTP
 // @route   POST /api/auth/two-factor-otp
 // @access  Public
 exports.TwoFactorOTP = async (req, res, next) => {
@@ -853,6 +853,65 @@ exports.TwoFactorOTP = async (req, res, next) => {
     }
   } catch (error) {
     console.error('Forgot password error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error'
+    });
+  }
+};
+
+// @desc    Verify Two Factor OTP
+// @route   POST /api/auth/updateemail
+// @access  Public
+exports.VerifyTwoFaOTP = async (req, res, next) => {
+  try {
+    const { otp } = req.body;
+
+    if (!otp) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide a valid OTP'
+      });
+    }
+
+    const user = await User.findOne({
+      emailVerificationOTP: otp,
+      emailVerificationOTPExpire: { $gt: Date.now() },
+    });
+
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid or expired OTP'
+      });
+    }
+
+    try {
+
+      user.resetPasswordToken = undefined;
+      user.resetPasswordExpire = undefined;
+
+      await user.save();
+
+      res.status(200).json({
+        success: true,
+        message: 'OTP verified successfully'
+      });
+
+    } catch (err) {
+      console.error('OTP Verify error:', err);
+      user.resetPasswordToken = undefined;
+      user.resetPasswordExpire = undefined;
+
+      await user.save({ validateBeforeSave: false });
+
+      return res.status(500).json({
+        success: false,
+        message: 'OTP can not be verified'
+      });
+    }
+  } catch (error) {
+    console.error('Verifying OTP error:', error);
     res.status(500).json({
       success: false,
       message: 'Server error'
