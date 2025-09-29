@@ -75,7 +75,8 @@ const sendTokenResponse = (user, statusCode, res) => {
         isActive: user.isActive,
         referralCode: refferal_code,
         emailVerified: user.emailVerified,
-        createdAt: user.createdAt
+        createdAt: user.createdAt,
+        twofactor: user.TwoFactorAuth
       }
     });
 };

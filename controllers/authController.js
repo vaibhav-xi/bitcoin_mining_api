@@ -160,7 +160,8 @@ exports.login = async (req, res, next) => {
           id: user._id,
           name: user.name,
           email: user.email,
-          referral: user.referralCode
+          referral: user.referralCode,
+          twofactor: user.TwoFactorAuth
         }
       });
     }
@@ -777,6 +778,81 @@ exports.updateemail = async (req, res, next) => {
     }
   } catch (error) {
     console.error('Update Email error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error'
+    });
+  }
+};
+
+// @desc    Update Email OTP
+// @route   POST /api/auth/two-factor-otp
+// @access  Public
+exports.TwoFactorOTP = async (req, res, next) => {
+  try {
+    const { user_id } = req.body;
+
+    if (!user_id) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide an user id'
+      });
+    }
+
+    const user = await User.findById(user_id);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'There is no user with that user id'
+      });
+    }
+
+    // Get reset token
+    const UpdateOTP = user.generateEmailVerificationOTP();
+
+    await user.save({ validateBeforeSave: false });
+
+    const NewMessage = `You are receiving this email because you have requested to change email`;
+
+    const NewHtmlMessage = `
+      <h1>Email Change Request</h1>
+      <p>You are receiving this email because someone is trying to login to your account.</p>
+
+      <p>Please use the code below to update your email:</p>
+      <p>${UpdateOTP}</p>
+      
+      <p>If you did not request this, please ignore this email.</p>
+      <p>This code will expire in 10 minutes.</p>
+    `;
+
+    try {
+
+      await sendEmail({
+        email: user.email,
+        subject: 'Two Factor Authentication',
+        NewMessage,
+        html: NewHtmlMessage
+      });
+
+      res.status(200).json({
+        success: true,
+        message: 'Email sent successfully'
+      });
+    } catch (err) {
+      console.error('Email send error:', err);
+      user.resetPasswordToken = undefined;
+      user.resetPasswordExpire = undefined;
+
+      await user.save({ validateBeforeSave: false });
+
+      return res.status(500).json({
+        success: false,
+        message: 'Email could not be sent'
+      });
+    }
+  } catch (error) {
+    console.error('Forgot password error:', error);
     res.status(500).json({
       success: false,
       message: 'Server error'
