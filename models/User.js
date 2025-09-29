@@ -77,6 +77,10 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  TwoFactorAuth: {
+    type: Boolean,
+    default: false
+  },
   emailVerificationToken: String,
   emailVerificationExpire: Date,
   emailVerificationOTP: String,
