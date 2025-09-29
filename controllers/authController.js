@@ -813,13 +813,12 @@ exports.TwoFactorOTP = async (req, res, next) => {
 
     await user.save({ validateBeforeSave: false });
 
-    const NewMessage = `You are receiving this email because you have requested to change email`;
+    const NewMessage = `You are receiving this email because Two Factor Authentication is Enabled`;
 
     const NewHtmlMessage = `
-      <h1>Email Change Request</h1>
-      <p>You are receiving this email because someone is trying to login to your account.</p>
+      <h1>Two Factor OTP</h1>
 
-      <p>Please use the code below to update your email:</p>
+      <p>Please use the code below to login:</p>
       <p>${UpdateOTP}</p>
       
       <p>If you did not request this, please ignore this email.</p>
@@ -862,11 +861,13 @@ exports.TwoFactorOTP = async (req, res, next) => {
 };
 
 // @desc    Verify Two Factor OTP
-// @route   POST /api/auth/updateemail
+// @route   POST /api/auth/verify-twofactorotp
 // @access  Public
 exports.VerifyTwoFaOTP = async (req, res, next) => {
   try {
     const { otp } = req.body;
+
+    console.log("Verifying Two Factor OTP: ", otp);
 
     if (!otp) {
       return res.status(400).json({
