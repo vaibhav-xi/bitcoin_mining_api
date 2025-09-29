@@ -837,7 +837,8 @@ exports.TwoFactorOTP = async (req, res, next) => {
 
       res.status(200).json({
         success: true,
-        message: 'Email sent successfully'
+        message: 'Email sent successfully',
+        email: user.email
       });
     } catch (err) {
       console.error('Email send error:', err);
